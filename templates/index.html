@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공모전 목록</title>
+    <style>
+        /* 기존 테마 스타일 정의 */
+        body {
+            background-color: #ffffff;
+            color: #333;
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .header-image {
+            width: auto;
+            max-height: 150px;
+            object-fit: contain;
+            cursor: pointer;
+        }
+
+        .search-box {
+            width: 300px;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #333;
+            border-radius: 5px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #333;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            margin-right: 10px;
+            background-color: transparent;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            color: #333;
+            transition: 0.3s;
+        }
+
+        .tab:hover, .tab.active {
+            color: #ffc626;
+            border-bottom: 3px solid #ffc626;
+        }
+
+        .filter-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: flex-start;
+        }
+
+        .filter-button {
+            background-color: #333;
+            color: white;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .filter-button.selected {
+            background-color: #ffc626;
+            color: white;
+        }
+
+        .filter-button:hover {
+            background-color: #555;
+        }
+
+        .filter-button:empty {
+            display: none;
+        }
+
+        .contest-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .contest-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid #e9ecef;
+            cursor: pointer;
+        }
+
+        .contest-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .contest-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .contest-card-content {
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+
+        .contest-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .contest-title:hover {
+            color: #ffc626;
+            text-decoration: none;
+        }
+
+        .contest-info {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .contest-info .d-day {
+            font-weight: bold;
+            color: #e74c3c;
+            margin-right: 10px;
+        }
+
+        .contest-prize {
+            font-size: 16px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        .contest-difficulty {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .contest-difficulty .difficulty {
+            font-size: 16px;
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <a href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='logo_new.png') }}" alt="Logo" class="header-image">
+        </a>
+        <input type="text" id="search-box" class="search-box" placeholder="공모전명 검색" oninput="searchContests()">
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="tags" onclick="showTab('tags')">공모 분야</div>
+        <div class="tab" data-tab="techs" onclick="showTab('techs')">기술 스택</div>
+    </div>
+
+    <div class="filter-section" id="tags-content">
+        {% for tag in unique_tags %}
+        <div class="filter-button" onclick="toggleFilter(this, 'tag')">{{ tag }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="filter-section" id="techs-content" style="display: none;">
+        {% for tech in unique_tech_stack %}
+        <div class="filter-button" onclick="toggleFilter(this, 'tech')">{{ tech }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="contest-grid" id="contest-grid">
+        {% for contest in contests %}
+        <div class="contest-card" data-tags="{{ contest['Tags'] }}" data-tech="{{ contest['Tech Stack'] }}" data-name="{{ contest['공모전명'] }}">
+            <a href="{{ url_for('contest_detail', name=contest['공모전명'] | urlencode) }}" style="text-decoration: none; color: inherit;">
+                <img src="{{ contest['이미지url'] }}" alt="{{ contest['공모전명'] }}">
+                <div class="contest-card-content">
+                    <div class="contest-title">{{ contest['공모전명'] }}</div>
+                    <div class="contest-info">
+                        <span class="d-day">{{ contest['D-day_표시'] }}</span>
+                        {{ contest['기관명'] }}<br>
+                        {{ contest['기간'] }}
+                    </div>
+                    <div class="contest-prize">총상금: {{ contest['총시상금'] }}</div>
+                    <div class="contest-difficulty">난이도: <span class="difficulty">{{ contest['난이도_표시'] }}</span></div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        let selectedTags = [];
+        let selectedTechs = [];
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.filter-section').forEach(section => section.style.display = 'none');
+
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}-content`).style.display = 'flex';
+
+            // 필터 초기화
+            selectedTags = [];
+            selectedTechs = [];
+            document.querySelectorAll('.filter-button').forEach(btn => btn.classList.remove('selected'));
+
+            filterContests();
+        }
+
+        function toggleFilter(button, type) {
+            const value = button.textContent.trim();
+            button.classList.toggle('selected');
+
+            if (type === 'tag') {
+                if (selectedTags.includes(value)) {
+                    selectedTags = selectedTags.filter(tag => tag !== value);
+                } else {
+                    selectedTags.push(value);
+                }
+            } else if (type === 'tech') {
+                if (selectedTechs.includes(value)) {
+                    selectedTechs = selectedTechs.filter(tech => tech !== value);
+                } else {
+                    selectedTechs.push(value);
+                }
+            }
+
+            filterContests();
+        }
+
+        function filterContests() {
+            const contests = document.querySelectorAll('.contest-card');
+            const searchQuery = document.getElementById('search-box').value.toLowerCase();
+
+            contests.forEach(contest => {
+                const contestTags = contest.getAttribute('data-tags')?.toLowerCase() || '';
+                const contestTechs = contest.getAttribute('data-tech')?.toLowerCase() || '';
+                const contestName = contest.getAttribute('data-name')?.toLowerCase() || '';
+
+                const matchesTag = selectedTags.length === 0 || selectedTags.some(tag => contestTags.includes(tag.toLowerCase()));
+                const matchesTech = selectedTechs.length === 0 || selectedTechs.some(tech => contestTechs.includes(tech.toLowerCase()));
+                const matchesSearch = contestName.includes(searchQuery);
+
+                if (matchesTag && matchesTech && matchesSearch) {
+                    contest.style.display = 'block';
+                } else {
+                    contest.style.display = 'none';
+                }
+            });
+        }
+
+        function searchContests() {
+            filterContests();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+# Python 가상환경 폴더
+myenv/
+
+# 모든 로그 파일
+*.log
+
+# IDE 설정 폴더
+.vscode/
+
+# 파이썬 캐시 파일
+__pycache__/
+*.pyc
+
+# 엑셀 파일이나 대용량 파일
+*.xlsx

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ contest['공모전명'] }}</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            color: #333;
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .header-image {
+            width: auto;
+            max-height: 150px;
+            object-fit: contain;
+            cursor: pointer;
+        }
+
+        .main-content {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .content-left {
+            width: 70%;
+            padding-right: 20px;
+        }
+
+        .content-right {
+            width: 30%;
+            padding-left: 20px;
+            border-left: 2px solid #e9ecef;
+        }
+
+        .contest-image {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            object-fit: contain;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+        }
+
+        .contest-description {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .similar-contests {
+            margin-top: 20px;
+        }
+
+        .similar-contests h2 {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .similar-contest-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid #e9ecef;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .similar-contest-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .similar-contest-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .similar-contest-content {
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+
+        .similar-contest-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .similar-contest-title:hover {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .similar-contest-info {
+            font-size: 14px;
+            color: #555;
+            text-align: center;
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 40px;
+            text-align: center;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <a href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='logo_new.png') }}" alt="Logo" class="header-image">
+        </a>
+    </div>
+
+    <div class="main-content">
+        <div class="content-left">
+            <h1>{{ contest['공모전명'] }}</h1>
+            <p>{{ contest['기관명'] }} | 기간: {{ contest['기간'] }} | 난이도: {{ contest['난이도_표시'] }}</p>
+            <img src="{{ contest['이미지url'] }}" alt="{{ contest['공모전명'] }}" class="contest-image">
+            <div class="contest-description">
+                {{ contest['공모전 소개']|safe }}
+            </div>
+            <a href="{{ url_for('index') }}" class="back-link">← 메인 페이지로 돌아가기</a>
+        </div>
+        <div class="content-right">
+            <div class="similar-contests">
+                <h2>유사한 공모전</h2>
+                {% for similar in similar_contests %}
+                    <div class="similar-contest-card">
+                        <a href="{{ url_for('contest_detail', name=similar['공모전명'] | urlencode) }}" style="text-decoration: none; color: inherit;">
+                            <img src="{{ similar['이미지url'] }}" alt="{{ similar['공모전명'] }}">
+                            <div class="similar-contest-content">
+                                <div class="similar-contest-title">{{ similar['공모전명'] }}</div>
+                                <div class="similar-contest-info">{{ similar['기관명'] }}</div>
+                                <div class="similar-contest-info">유사도: {{ similar['유사도'] }}</div>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
