@@ -13,3 +13,4 @@ __pycache__/
 
 # 엑셀 파일이나 대용량 파일
 *.xlsx
+!final_data.xlsx

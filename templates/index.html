@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>공모전 목록</title>
     <style>
-        /* 기존 테마 스타일 정의 */
         body {
             background-color: #ffffff;
             color: #333;
@@ -51,6 +50,7 @@
             font-size: 16px;
             color: #333;
             transition: 0.3s;
+            text-decoration: none; /* 회사 소개 탭과 다른 탭의 스타일을 통일 */
         }
 
         .tab:hover, .tab.active {
@@ -173,8 +173,10 @@
     </div>
 
     <div class="tabs">
+        <a href="{{ url_for('company') }}" class="tab">회사 소개</a>
         <div class="tab active" data-tab="tags" onclick="showTab('tags')">공모 분야</div>
         <div class="tab" data-tab="techs" onclick="showTab('techs')">기술 스택</div>
+        <div class="tab" data-tab="difficulty" onclick="showTab('difficulty')">난이도</div>
     </div>
 
     <div class="filter-section" id="tags-content">
@@ -189,9 +191,17 @@
         {% endfor %}
     </div>
 
+    <div class="filter-section" id="difficulty-content" style="display: none;">
+        <div class="filter-button" data-difficulty="🔥🔥🔥🔥🔥" onclick="toggleFilter(this, 'difficulty')">매우 어려움</div>
+        <div class="filter-button" data-difficulty="🔥🔥🔥🔥" onclick="toggleFilter(this, 'difficulty')">어려움</div>
+        <div class="filter-button" data-difficulty="🔥🔥🔥" onclick="toggleFilter(this, 'difficulty')">보통</div>
+        <div class="filter-button" data-difficulty="🔥🔥" onclick="toggleFilter(this, 'difficulty')">쉬움</div>
+        <div class="filter-button" data-difficulty="🔥" onclick="toggleFilter(this, 'difficulty')">매우 쉬움</div>
+    </div>
+
     <div class="contest-grid" id="contest-grid">
         {% for contest in contests %}
-        <div class="contest-card" data-tags="{{ contest['Tags'] }}" data-tech="{{ contest['Tech Stack'] }}" data-name="{{ contest['공모전명'] }}">
+        <div class="contest-card" data-tags="{{ contest['Tags'] }}" data-tech="{{ contest['Tech Stack'] }}" data-name="{{ contest['공모전명'] }}" data-difficulty="{{ contest['난이도_표시'] }}">
             <a href="{{ url_for('contest_detail', name=contest['공모전명'] | urlencode) }}" style="text-decoration: none; color: inherit;">
                 <img src="{{ contest['이미지url'] }}" alt="{{ contest['공모전명'] }}">
                 <div class="contest-card-content">
@@ -212,6 +222,7 @@
     <script>
         let selectedTags = [];
         let selectedTechs = [];
+        let selectedDifficulties = [];
 
         function showTab(tabName) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
@@ -220,9 +231,9 @@
             document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
             document.getElementById(`${tabName}-content`).style.display = 'flex';
 
-            // 필터 초기화
             selectedTags = [];
             selectedTechs = [];
+            selectedDifficulties = [];
             document.querySelectorAll('.filter-button').forEach(btn => btn.classList.remove('selected'));
 
             filterContests();
@@ -244,6 +255,12 @@
                 } else {
                     selectedTechs.push(value);
                 }
+            } else if (type === 'difficulty') {
+                if (selectedDifficulties.includes(button.getAttribute('data-difficulty'))) {
+                    selectedDifficulties = selectedDifficulties.filter(difficulty => difficulty !== button.getAttribute('data-difficulty'));
+                } else {
+                    selectedDifficulties.push(button.getAttribute('data-difficulty'));
+                }
             }
 
             filterContests();
@@ -257,12 +274,14 @@
                 const contestTags = contest.getAttribute('data-tags')?.toLowerCase() || '';
                 const contestTechs = contest.getAttribute('data-tech')?.toLowerCase() || '';
                 const contestName = contest.getAttribute('data-name')?.toLowerCase() || '';
+                const contestDifficulty = contest.getAttribute('data-difficulty') || '';
 
                 const matchesTag = selectedTags.length === 0 || selectedTags.some(tag => contestTags.includes(tag.toLowerCase()));
                 const matchesTech = selectedTechs.length === 0 || selectedTechs.some(tech => contestTechs.includes(tech.toLowerCase()));
+                const matchesDifficulty = selectedDifficulties.length === 0 || selectedDifficulties.includes(contestDifficulty);
                 const matchesSearch = contestName.includes(searchQuery);
 
-                if (matchesTag && matchesTech && matchesSearch) {
+                if (matchesTag && matchesTech && matchesDifficulty && matchesSearch) {
                     contest.style.display = 'block';
                 } else {
                     contest.style.display = 'none';
