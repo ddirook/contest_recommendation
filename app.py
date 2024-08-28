@@ -8,7 +8,17 @@ from sklearn.metrics.pairwise import cosine_similarity
 app = Flask(__name__)
 
 # 엑셀 데이터 로드
-data = pd.read_excel('final_data(1).xlsx')
+data = pd.read_excel('final_data_with_mbti.xlsx')
+
+# 숫자 포맷 필터 추가
+@app.template_filter('format_currency')
+def format_currency(value):
+    try:
+        value = float(value)  # 문자열을 숫자로 변환
+        return f"{value:,.0f}원"
+    except ValueError:
+        return value  # 변환에 실패하면 원래 값을 반환
+
 
 # 허용된 태그와 기술 스택 정의
 allowed_tags = [
@@ -51,6 +61,7 @@ data['Combined'] = data['Tags'] + ' ' + data['Tech Stack']
 
 unique_tags = sorted(set(tag.strip() for tags in data['Tags'].dropna() for tag in tags.split(',')))
 unique_tech_stack = sorted(set(stack.strip() for stacks in data['Tech Stack'].dropna() for stack in stacks.split(',')))
+unique_mbti = sorted(data['MBTI'].dropna().unique())
 
 # TF-IDF 벡터화
 vectorizer = TfidfVectorizer()
@@ -93,8 +104,8 @@ data['D-day_표시'] = data['D-day'].apply(format_d_day)
 
 @app.route('/')
 def index():
-    contests = data[['공모전명', '기관명', '기간', '1등시상금', '이미지url', 'Tags', 'Tech Stack', 'D-day_표시', '총시상금', '난이도_표시']].to_dict(orient='records')
-    return render_template('index.html', contests=contests, unique_tags=unique_tags, unique_tech_stack=unique_tech_stack)
+    contests = data[['공모전명', '기관명', '기간', '1등시상금', '이미지url', 'Tags', 'Tech Stack', 'D-day_표시', '총시상금', '난이도_표시', 'MBTI']].to_dict(orient='records')
+    return render_template('index.html', contests=contests, unique_tags=unique_tags, unique_tech_stack=unique_tech_stack, unique_mbti=unique_mbti)
 
 @app.route('/contest/<path:name>')
 def contest_detail(name):
