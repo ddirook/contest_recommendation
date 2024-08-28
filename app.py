@@ -8,7 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 app = Flask(__name__)
 
 # 엑셀 데이터 로드
-data = pd.read_excel('final_data.xlsx')
+data = pd.read_excel('final_data(1).xlsx')
 
 # 허용된 태그와 기술 스택 정의
 allowed_tags = [
